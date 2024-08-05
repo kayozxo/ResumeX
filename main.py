@@ -7,6 +7,7 @@ from reportlab.lib import colors
 from reportlab.lib.units import inch
 from io import BytesIO
 import streamlit_antd_components as sac
+import datetime
 
 def generate_pdf(data):
     buffer = BytesIO()
@@ -62,7 +63,8 @@ def main():
     if 'data' not in st.session_state:
         st.session_state.data = {
             "name": "", "email": "", "phone": "", "linkedin": "", "github": "",
-            "summary": "", "education": "", "experience": "", "skills": ""
+            "summary": "", "education": "", "experience": "", "skills": "",
+            "school": "", "course": "", "timeline": datetime.date.today(), "grade": ""
         }
 
     current_step = sac.steps(
@@ -98,7 +100,10 @@ def main():
     elif current_step == 1:
         with st.form("education_form"):
             st.subheader("Education")
-            st.session_state.data["education"] = st.text_area("Education", st.session_state.data["education"])
+            st.session_state.data["school"] = st.text_input("School Name", st.session_state.data["school"])
+            st.session_state.data["course"] = st.text_input("Course Name", st.session_state.data["course"])
+            st.session_state.data["timeline"] = st.date_input("Select Timeline", st.session_state.data["timeline"], min_value=datetime.date(1900, 1, 1), max_value=datetime.date(2100, 1, 1))
+            st.session_state.data["grade"] = st.text_input("Grade (%)", st.session_state.data["grade"])
             submit = st.form_submit_button("Save & Continue")
 
     elif current_step == 2:
@@ -120,7 +125,7 @@ def main():
             st.download_button(
                 label="Download Resume PDF",
                 data=pdf,
-                file_name=f"{st.session_state.data['name']}-Resume.pdf",
+                file_name=f"{st.session_state.data['name']} - Resume.pdf",
                 mime="application/pdf"
             )
 
