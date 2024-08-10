@@ -224,7 +224,5 @@ def main():
                 mime="application/pdf"
             )
 
-    st.write("Current Data:", st.session_state.data)
-
 if __name__ == "__main__":
     main()
