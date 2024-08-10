@@ -9,6 +9,11 @@ from io import BytesIO
 import streamlit_antd_components as sac
 import datetime
 
+st.set_page_config(
+    page_title="Resume Builder",
+    page_icon="📄"
+)
+
 def format_date(date):
     return date.strftime("%b %Y")
 
