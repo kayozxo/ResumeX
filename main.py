@@ -99,7 +99,7 @@ def generate_pdf(data):
         ("SUMMARY", "summary"),
         ("EDUCATION", "education"),
         ("EXPERIENCE", "experience"),
-        ("SKILLS", "skills"),
+        ("ADDITIONAL INFORMATION", "additional_information"),
     ]
 
     for section_title, section_key in sections:
@@ -139,11 +139,16 @@ def generate_pdf(data):
                     )
                 story.append(Spacer(1, 8))
 
-        elif section_key == "skills":
-            if data[section_key]:
-                story.append(Paragraph(section_title, styles["Heading2"]))
-                for skill in data[section_key]:
-                    story.append(Paragraph(f"• {skill.strip()}", normal_style))
+        elif section_key == "additional_information":
+            story.append(Paragraph(section_title, styles["Heading2"]))
+            if data["skills"]:
+                story.append(Paragraph(f"<b>Skills:</b> {data['skills']}", normal_style))
+            if data["languages"]:
+                story.append(Paragraph(f"<b>Languages:</b> {data['languages']}", normal_style))
+            if data["certifications"]:
+                story.append(Paragraph(f"<b>Certifications:</b> {data['certifications']}", normal_style))
+            if data["hobbies"]:
+                story.append(Paragraph(f"<b>Hobbies:</b> {data['hobbies']}", normal_style))
 
         elif section_key in data and data[section_key].strip():
             story.append(Paragraph(section_title, styles["Heading2"]))
@@ -190,6 +195,7 @@ def is_valid_grade(grade):
 
 def main():
     st.title("Resume Builder")
+    st.markdown("Built by [Manoj](https://github.com/kayozxo)")
 
     # Initialize session state
     if "data" not in st.session_state:
@@ -202,7 +208,10 @@ def main():
             "summary": "",
             "education": [],
             "experience": [],
-            "skills": [],
+            "skills": "",
+            "languages": "",
+            "certifications": "",
+            "hobbies": "",
         }
 
     current_step = sac.steps(
@@ -390,19 +399,22 @@ def main():
                     st.success("Experience entry added successfully!")
 
     elif current_step == 3:
-        with st.form("skills_form"):
-            st.subheader("Skills")
-            skills_input = st.text_area(
-                "Enter your skills (separated by commas)",
-                ", ".join(st.session_state.data["skills"]),
-            )
-            submit = st.form_submit_button("Save & Continue")
+        with st.form("additional_info_form"):
+            st.subheader("Additional Information")
+            st.write("Add any additional information separated by commas.")
+            skills = st.text_area("Skills", st.session_state.data["skills"])
+            languages = st.text_area("Languages", st.session_state.data["languages"])
+            certifications = st.text_area("Certifications", st.session_state.data["certifications"])
+            hobbies = st.text_area("Hobbies", st.session_state.data["hobbies"])
+            submit = st.form_submit_button("Save Additional Information")
+
             if submit:
-                skills_list = [
-                    skill.strip() for skill in skills_input.split(",") if skill.strip()
-                ]
-                st.session_state.data["skills"] = skills_list
-                st.success(f"Added {len(skills_list)} skills!")
+                st.session_state.data["skills"] = skills
+                st.session_state.data["languages"] = languages
+                st.session_state.data["certifications"] = certifications
+                st.session_state.data["hobbies"] = hobbies
+                st.success("Additional information saved successfully!")
+
 
     elif current_step == 4:
         st.subheader("Generate PDF")
