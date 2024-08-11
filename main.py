@@ -7,7 +7,7 @@ from reportlab.lib import colors
 from reportlab.lib.units import inch
 from io import BytesIO
 import streamlit_antd_components as sac
-import datetime
+import datetime, re
 
 st.set_page_config(
     page_title="Resume Builder",
@@ -107,6 +107,25 @@ def generate_pdf(data):
     buffer.seek(0)
     return buffer
 
+def is_valid_email(email):
+    pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    return re.match(pattern, email) is not None
+
+def is_valid_phone(phone):
+    pattern = r'^\+?[0-9]{10,14}$'
+    return re.match(pattern, phone) is not None
+
+def is_valid_url(url):
+    pattern = r'^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$'
+    return re.match(pattern, url) is not None
+
+def is_valid_grade(grade):
+    try:
+        float(grade)
+        return True
+    except ValueError:
+        return False
+
 def main():
     st.title("Resume Builder")
 
@@ -146,11 +165,36 @@ def main():
 
             summary = st.text_area("Summary", st.session_state.data["summary"])
             submit = st.form_submit_button("Save & Continue")
+
             if submit:
-                st.session_state.data.update({
-                    "name": name, "email": email, "phone": phone,
-                    "linkedin": linkedin, "github": github, "summary": summary
-                })
+                error = False
+
+                if not name:
+                    st.error("Please enter your full name.")
+                    error = True
+
+                if not is_valid_email(email):
+                    st.error("Please enter a valid email address.")
+                    error = True
+
+                if not is_valid_phone(phone):
+                    st.error("Please enter a valid phone number (10-14 digits, optionally starting with +).")
+                    error = True
+
+                if linkedin and not is_valid_url(linkedin):
+                    st.error("Please enter a valid LinkedIn URL.")
+                    error = True
+
+                if github and not is_valid_url(github):
+                    st.error("Please enter a valid GitHub URL.")
+                    error = True
+
+                if not error:
+                    st.session_state.data.update({
+                        "name": name, "email": email, "phone": phone,
+                        "linkedin": linkedin, "github": github, "summary": summary
+                    })
+                    st.success("Basic information saved successfully!")
 
     elif current_step == 1:
         # Display existing education entries
@@ -171,14 +215,36 @@ def main():
             submit = st.form_submit_button("Add Education Entry")
 
             if submit:
-                new_edu = {
-                    "school": school,
-                    "course": course,
-                    "timeline": (start_date, end_date),
-                    "grade": grade
-                }
-                st.session_state.data["education"].append(new_edu)
-                st.success("Education entry added successfully!")
+                error = False
+
+                if not school:
+                    st.error("Please enter the school name.")
+                    error = True
+
+                if not course:
+                    st.error("Please enter the course name.")
+                    error = True
+
+                if start_date >= end_date:
+                    st.error("End date must be after start date.")
+                    error = True
+
+                if not grade:
+                    st.error("Please enter a grade.")
+                    error = True
+                elif not is_valid_grade(grade):
+                    st.error("Please enter a valid grade (integer or decimal number).")
+                    error = True
+
+                if not error:
+                    new_edu = {
+                        "school": school,
+                        "course": course,
+                        "timeline": (start_date, end_date),
+                        "grade": grade
+                    }
+                    st.session_state.data["education"].append(new_edu)
+                    st.success("Education entry added successfully!")
 
     elif current_step == 2:
         # Display existing education entries
@@ -198,14 +264,33 @@ def main():
             submit = st.form_submit_button("Add Experience Entry")
 
             if submit:
-                new_exp = {
-                    "company": company,
-                    "role": role,
-                    "timeline": (start_date_c, end_date_c),
-                    "experience_summary": experience_summary
-                }
-                st.session_state.data["experience"].append(new_exp)
-                st.success("Experience entry added successfully!")
+                error = False
+
+                if not company:
+                    st.error("Please enter the company name.")
+                    error = True
+
+                if not role:
+                    st.error("Please enter the role name.")
+                    error = True
+
+                if start_date_c >= end_date_c:
+                    st.error("End date must be after start date.")
+                    error = True
+
+                if not experience_summary:
+                    st.error("Please add a summary (5 points)")
+                    error = True
+
+                if not error:
+                    new_exp = {
+                        "company": company,
+                        "role": role,
+                        "timeline": (start_date_c, end_date_c),
+                        "experience_summary": experience_summary
+                    }
+                    st.session_state.data["experience"].append(new_exp)
+                    st.success("Experience entry added successfully!")
 
     elif current_step == 3:
         with st.form("skills_form"):
