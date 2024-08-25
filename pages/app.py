@@ -16,15 +16,10 @@ import datetime, re
 from pathlib import Path
 
 st.set_page_config(page_title="Resume Builder", page_icon="📄")
+
 with st.sidebar:
     st.page_link("main.py", label="Welcome")
     st.page_link("pages/app.py", label="Resume Builder")
-
-current_dir = Path(__file__).parent if "__file__" in locals() else Path.cwd()
-css_file = current_dir / "styles" / "style.css"
-
-with open(css_file) as f:
-    st.markdown("<style>{}</style>".format(f.read()), unsafe_allow_html=True)
 
 
 def format_date(date):
