@@ -1,19 +1,11 @@
 import streamlit as st
 import streamlit_antd_components as sac
-from pathlib import Path
 
 st.set_page_config(page_title="Resume Builder", page_icon="📄")
 
 with st.sidebar:
     st.page_link("main.py", label="Welcome")
     st.page_link("pages/app.py", label="Resume Builder")
-
-current_dir = Path(__file__).parent if "__file__" in locals() else Path.cwd()
-css_file = current_dir / "pages" / "styles" / "style.css"
-
-with open(css_file) as f:
-    st.markdown("<style>{}</style>".format(f.read()), unsafe_allow_html=True)
-
 
 st.title("Welcome to the Resume Builder")
 
