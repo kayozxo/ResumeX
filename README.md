@@ -89,7 +89,7 @@ resume-builder/
 
 ## Customization
 
-You can customize the resume layout and styling by modifying the `generate_pdf` function in `main.py`. The function uses ReportLab to create the PDF, so you can adjust fonts, colors, spacing, and more to match your preferences.
+You can customize the resume layout and styling by modifying the `generate_pdf` function in `app.py`. The function uses ReportLab to create the PDF, so you can adjust fonts, colors, spacing, and more to match your preferences.
 
 ## Contributing
 
