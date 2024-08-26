@@ -76,10 +76,15 @@ Resume Builder is a Streamlit-based web application that allows users to create 
 
 ```
 resume-builder/
-│
+├── .streamlit
+├    └── config.toml
+├── views
+├    ├── app.py
+├    └── welcome.py
 ├── main.py              # Main Streamlit application
 ├── requirements.txt     # List of Python dependencies
 └── README.md            # Project documentation (you are here)
+
 ```
 
 ## Customization
