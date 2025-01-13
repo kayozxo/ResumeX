@@ -3,6 +3,19 @@ from pathlib import Path
 
 st.set_page_config(page_title="Resume Builder", page_icon="📄")
 
+st.html (
+    """
+    <style>
+    .stSidebar {
+        background-color: #141415 !important;
+    }
+    .stAppHeader, .stAppFooter {
+        visibility: hidden;
+    }
+    </style>
+    """,
+)
+
 welcome_page = st.Page(
     page="views/welcome.py",
     title="Welcome",
