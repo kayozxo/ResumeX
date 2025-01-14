@@ -8,7 +8,7 @@ This Resume Builder is designed to help you create a professional, well-formatte
 Follow the steps below to create your perfect resume!
 """)
 
-with st.expander("How to Use This Resume Builder", expanded=True):
+with st.expander("How to Use This Resume Builder", expanded=True, icon=":material/question_mark:"):
     st.markdown("""
     1. **Basic Information**: Enter your personal details such as name, contact information, and a brief summary.
     2. **Education**: Add your educational background. You can add multiple entries.
@@ -26,7 +26,7 @@ with st.expander("How to Use This Resume Builder", expanded=True):
     ```
     """)
 
-with st.expander("Features", expanded=True):
+with st.expander("Features", expanded=True, icon=":material/check:"):
     features = [
         "Easy-to-use interface",
         "Step-by-step resume creation process",
@@ -38,7 +38,7 @@ with st.expander("Features", expanded=True):
     for feature in features:
         st.markdown(f"- {feature}")
 
-with st.expander("About the Developer", expanded=True):
+with st.expander("About the Developer", expanded=True, icon=":material/person_4:"):
     st.markdown("""
     This Resume Builder was created by Manoj.
 

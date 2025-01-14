@@ -232,7 +232,7 @@ current_step = sac.steps(
 
 if current_step == 0:
     with st.form("basic_info_form"):
-        st.subheader("Basic Information")
+        st.subheader(":material/info: Basic Information")
         col1, col2, col3 = st.columns(3)
         with col1:
             name = st.text_input("Full Name", st.session_state.data["name"])
@@ -295,7 +295,7 @@ elif current_step == 1:
 
     # Form for adding new education entry
     with st.form("education_form"):
-        st.subheader("Education")
+        st.subheader(":material/school: Education")
         col1, col2 = st.columns(2)
         with col1:
             school = st.text_input("School Name")
@@ -352,7 +352,7 @@ elif current_step == 2:
         st.write(f"Entry {i+1}: {exp['company']} - {exp['role']}")
 
     with st.form("experience_form"):
-        st.subheader("Work Experience")
+        st.subheader(":material/work: Work Experience")
         col1, col2 = st.columns(2)
         with col1:
             company = st.text_input("Company Name")
@@ -402,7 +402,7 @@ elif current_step == 2:
 
 elif current_step == 3:
     with st.form("additional_info_form"):
-        st.subheader("Additional Information")
+        st.subheader(":material/badge: Additional Information")
         st.write("Add any additional information separated by commas.")
         skills = st.text_area("Skills", st.session_state.data["skills"])
         languages = st.text_area("Languages", st.session_state.data["languages"])
@@ -420,7 +420,7 @@ elif current_step == 3:
             st.success("Additional information saved successfully!")
 
 elif current_step == 4:
-    st.subheader("Generate PDF")
+    st.subheader(":material/picture_as_pdf: Generate PDF")
     if st.button("Generate Resume PDF"):
         pdf = generate_pdf(st.session_state.data)
         st.download_button(

@@ -12,6 +12,15 @@ st.html (
     .stAppHeader, .stAppFooter {
         visibility: hidden;
     }
+    [data-testid="stExpander"] details {
+        border-radius: 24px;
+    }
+    [data-testid="stFormSubmitButton"] button {
+        border-radius: 12px;
+    }
+    .stForm {
+        border-radius: 24px !important;
+    }
     </style>
     """,
 )
