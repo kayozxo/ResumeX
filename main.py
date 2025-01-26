@@ -42,7 +42,7 @@ welcome_page = st.Page(
 
 app_page = st.Page(
     page="views/app.py",
-    title="Resume Builder",
+    title="ResumeX",
     icon=":material/edit_square:",
 )
 

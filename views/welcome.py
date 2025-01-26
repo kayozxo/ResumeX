@@ -27,16 +27,15 @@ with st.expander("How to Use This Resume Builder", expanded=True, icon=":materia
     """)
 
 with st.expander("Features", expanded=True, icon=":material/check:"):
-    features = [
-        "Easy-to-use interface",
-        "Step-by-step resume creation process",
-        "Automatic formatting of your resume",
-        "PDF generation for easy sharing and printing",
-        "Ability to add multiple education and experience entries",
-        "Custom sections for skills, languages, certifications, and hobbies",
-    ]
-    for feature in features:
-        st.markdown(f"- {feature}")
+    st.markdown("""
+    - Easy-to-use interface
+    - Step-by-step resume creation process
+    - Automatic formatting of your resume
+    - PDF generation for easy sharing and printing
+    - Ability to add multiple education and experience entries
+    - Custom sections for skills, languages, certifications, and hobbies
+    """)
+
 
 with st.expander("About the Developer", expanded=True, icon=":material/person_4:"):
     st.markdown("""
