@@ -1,10 +1,10 @@
 import streamlit as st
 
 
-st.title("Welcome to the Resume Builder")
+st.title("✨ Welcome to the Resumex")
 
 st.markdown("""
-This Resume Builder is designed to help you create a professional, well-formatted resume with ease.
+Resumex is designed to help you create a professional, well-formatted resume with ease.
 Follow the steps below to create your perfect resume!
 """)
 

@@ -1,7 +1,12 @@
 import streamlit as st
 from pathlib import Path
 
-st.set_page_config(page_title="Resume Builder", page_icon="📄")
+st.set_page_config(
+    page_title="ResumeX - Professional Resume Builder",
+    page_icon="📄",
+    layout="centered",
+    initial_sidebar_state="expanded"
+)
 
 st.html (
     """
