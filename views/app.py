@@ -198,7 +198,7 @@ def is_valid_grade(grade):
         return False
 
 
-st.title("Resume Builder")
+st.title("ResumeX")
 st.markdown("Built by [Manoj](https://github.com/kayozxo)")
 
 # Initialize session state
@@ -420,12 +420,24 @@ elif current_step == 3:
             st.success("Additional information saved successfully!")
 
 elif current_step == 4:
-    st.subheader(":material/picture_as_pdf: Generate PDF")
-    if st.button("Generate Resume PDF"):
-        pdf = generate_pdf(st.session_state.data)
-        st.download_button(
-            label="Download Resume PDF",
-            data=pdf,
-            file_name=f"{st.session_state.data['name']} - Resume.pdf",
-            mime="application/pdf",
-        )
+    st.subheader(":material/picture_as_pdf: Generate Resume PDF")
+    with st.expander("Preview Resume Data"):
+        st.json(st.session_state.data, expanded=False)
+
+    if st.button("✨ Generate Resume PDF", key="generate_pdf_button", use_container_width=True):
+        if not st.session_state.data["name"]:
+            st.error("Please complete Basic Information first")
+        else:
+            with st.spinner("Generating PDF..."):
+                try:
+                    pdf = generate_pdf(st.session_state.data)
+                    st.download_button(
+                        label="Download PDF",
+                        data=pdf,
+                        file_name=f"{st.session_state.data['name']}_Resume.pdf",
+                        mime="application/pdf",
+                    )
+                    st.balloons()
+                except Exception as e:
+                    st.error(f"Error generating PDF: {str(e)}")
+

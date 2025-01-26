@@ -1,7 +1,7 @@
 import streamlit as st
 
 
-st.title("✨ Welcome to the Resumex")
+st.title("✨ Welcome to the ResumeX!")
 
 st.markdown("""
 Resumex is designed to help you create a professional, well-formatted resume with ease.

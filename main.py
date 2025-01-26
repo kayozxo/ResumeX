@@ -26,6 +26,9 @@ st.html (
     .stForm {
         border-radius: 24px !important;
     }
+    .st-key-generate_pdf_button button {
+        border-radius: 50px;
+    }
     </style>
     """,
 )
