@@ -8,6 +8,13 @@ Resumex is designed to help you create a professional, well-formatted resume wit
 Follow the steps below to create your perfect resume!
 """)
 
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("Start Building Your Resume", type="secondary",  use_container_width=True, icon=":material/arrow_forward:"):
+        st.switch_page("views/app.py")
+with col2:
+    st.link_button("Star on Github", url="https://github.com/kayozxo/Resume-Builder", use_container_width=True, icon=":material/star:")
+
 with st.expander("How to Use This Resume Builder", expanded=True, icon=":material/question_mark:"):
     st.markdown("""
     1. **Basic Information**: Enter your personal details such as name, contact information, and a brief summary.

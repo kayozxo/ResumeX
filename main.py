@@ -29,6 +29,9 @@ st.html (
     .st-key-generate_pdf_button button {
         border-radius: 50px;
     }
+    .stAlertContainer {
+        border-radius: 12px;
+    }
     </style>
     """,
 )
