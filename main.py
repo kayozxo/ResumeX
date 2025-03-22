@@ -32,6 +32,7 @@ st.html (
     .stAlertContainer {
         border-radius: 12px;
     }
+
     </style>
     """,
 )
@@ -49,5 +50,11 @@ app_page = st.Page(
     icon=":material/edit_square:",
 )
 
-pg = st.navigation(pages=[welcome_page, app_page])
+ai_page = st.Page(
+    page="views/ai.py",
+    title="Resume Enhancer",
+    icon=":material/star:",
+)
+
+pg = st.navigation(pages=[welcome_page, app_page, ai_page])
 pg.run()

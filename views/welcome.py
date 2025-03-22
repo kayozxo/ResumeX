@@ -8,12 +8,24 @@ Resumex is designed to help you create a professional, well-formatted resume wit
 Follow the steps below to create your perfect resume!
 """)
 
-col1, col2 = st.columns(2)
-with col1:
-    if st.button("Start Building Your Resume", type="secondary",  use_container_width=True, icon=":material/arrow_forward:"):
-        st.switch_page("views/app.py")
-with col2:
-    st.link_button("Star on Github", url="https://github.com/kayozxo/Resume-Builder", use_container_width=True, icon=":material/star:")
+if st.button("Start Building Your Resume", type="secondary",  use_container_width=True, icon=":material/arrow_forward:", key="startButton"):
+    st.switch_page("views/app.py")
+
+st.html(
+    """
+    <style>
+    .st-key-startButton button{
+        background-color: #00b809 !important;
+    }
+    .st-key-startButton button:hover{
+        background-color: #00cc0a !important;
+    }
+    .st-key-startButton p{
+        color: #fafafa !important;
+    }
+    </style>
+    """,
+)
 
 with st.expander("How to Use This Resume Builder", expanded=True, icon=":material/question_mark:"):
     st.markdown("""
