@@ -53,16 +53,6 @@ with st.expander("Features", expanded=True, icon=":material/check:"):
     - PDF generation for easy sharing and printing
     - Ability to add multiple education and experience entries
     - Custom sections for skills, languages, certifications, and hobbies
+    - Enhance your resume with AI tailored to respective job description
     """)
 
-
-with st.expander("About the Developer", expanded=True, icon=":material/person_4:"):
-    st.markdown("""
-    This Resume Builder was created by Manoj.
-
-    - **GitHub**: [kayozxo](https://github.com/kayozxo)
-    - **LinkedIn**: [Penugurthi Manoj](https://linkedin.com/in/penugurthi-manoj)
-    - **Email**: penugurthimanoj@gmail.com
-
-    Feel free to reach out if you have any questions or suggestions!
-    """)
