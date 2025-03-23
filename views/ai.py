@@ -2,15 +2,23 @@ import streamlit as st
 import PyPDF2
 import io
 import re
-from pathlib import Path
-import tempfile
+import google.generativeai as genai
+
+st.title("AI Resume Optimizer")
+st.write("Upload your resume and paste a job description to get AI-powered suggestions.")
+
+api_key = st.sidebar.text_input("Enter Google Gemini API Key", type="password")
+st.sidebar.caption("Get an API key from [Google AI Studio](https://aistudio.google.com/)")
+
+if api_key:
+    genai.configure(api_key=api_key)
+else:
+    st.warning("Enter your Google Gemini API Key to enable AI features.")
 
 def extract_text_from_pdf(pdf_file):
     try:
         pdf_reader = PyPDF2.PdfReader(pdf_file)
-        text = ""
-        for page_num in range(len(pdf_reader.pages)):
-            text += pdf_reader.pages[page_num].extract_text()
+        text = "\n".join([page.extract_text() for page in pdf_reader.pages if page.extract_text()])
         return text
     except Exception as e:
         st.error(f"Error extracting text from PDF: {e}")
@@ -18,144 +26,136 @@ def extract_text_from_pdf(pdf_file):
 
 def extract_resume_sections(text):
     sections = {
-        "contact_info": r"(?:CONTACT|PERSONAL|PROFILE)",
-        "summary": r"(?:SUMMARY|PROFESSIONAL SUMMARY|PROFILE|ABOUT ME)",
-        "experience": r"(?:EXPERIENCE|WORK EXPERIENCE|EMPLOYMENT|PROFESSIONAL EXPERIENCE)",
-        "education": r"(?:EDUCATION|ACADEMIC|QUALIFICATIONS)",
-        "skills": r"(?:SKILLS|TECHNICAL SKILLS|CORE COMPETENCIES|EXPERTISE)",
-        "projects": r"(?:PROJECTS|PROJECT EXPERIENCE)",
-        "certifications": r"(?:CERTIFICATIONS|CERTIFICATES|ACCREDITATIONS)",
-        "languages": r"(?:LANGUAGES|LANGUAGE PROFICIENCY)",
-        "interests": r"(?:INTERESTS|HOBBIES)"
+        "experience": r"(?i)(?:EXPERIENCE|WORK EXPERIENCE|EMPLOYMENT|PROFESSIONAL EXPERIENCE|RELEVANT EXPERIENCE)",
+        "education": r"(?i)(?:EDUCATION|ACADEMIC QUALIFICATIONS|EDUCATIONAL BACKGROUND)",
+        "skills": r"(?i)(?:SKILLS|TECHNICAL SKILLS|COMPETENCIES|AREAS OF EXPERTISE)",
+        "projects": r"(?i)(?:PROJECTS|PROJECT EXPERIENCE|PERSONAL PROJECTS)",
+        "certifications": r"(?i)(?:CERTIFICATIONS|CERTIFICATES|LICENSES)",
+        "summary": r"(?i)(?:SUMMARY|OBJECTIVE|PROFILE)",
     }
-
-    extracted_sections = {}
-
-    current_section = "unsorted"
-    extracted_sections[current_section] = []
+    extracted_sections = {"unsorted": []}
 
     lines = text.split('\n')
+    current_section = "unsorted"
+
     for line in lines:
         line = line.strip()
         if not line:
             continue
-
-        is_header = False
-        for section_name, pattern in sections.items():
+        for section, pattern in sections.items():
             if re.search(pattern, line.upper()):
-                current_section = section_name
+                current_section = section
                 extracted_sections[current_section] = []
-                is_header = True
                 break
+        extracted_sections.setdefault(current_section, []).append(line)
 
-        if not is_header:
-            extracted_sections[current_section].append(line)
-
-    for section in extracted_sections:
-        extracted_sections[section] = '\n'.join(extracted_sections[section])
-
-    return extracted_sections
+    return {k: '\n'.join(v) for k, v in extracted_sections.items()}
 
 def extract_bullet_points(text):
     bullet_patterns = [
-        r'• (.+?)(?=• |\n\n|$)',
-        r'· (.+?)(?=· |\n\n|$)',
-        r'- (.+?)(?=- |\n\n|$)',
-        r'▪ (.+?)(?=▪ |\n\n|$)',
-        r'○ (.+?)(?=○ |\n\n|$)',
-        r'➢ (.+?)(?=➢ |\n\n|$)',
-        r'★ (.+?)(?=★ |\n\n|$)',
-        r'\* (.+?)(?=\* |\n\n|$)',
-        r'\d+\.\s*(.+?)(?=\d+\.\s*|\n\n|$)',
+        r'•\s*(.+?)(?=\n|$)',
+        r'-\s*(.+?)(?=\n|$)',
+        r'\d+\.\s*(.+?)(?=\n|$)',
+        r'\u2022\s*(.+?)(?=\n|$)',
+        r'\*\s*(.+?)(?=\n|$)',
+        r'◦\s*(.+?)(?=\n|$)'
     ]
-
     bullet_points = []
+
     for pattern in bullet_patterns:
-        matches = re.findall(pattern, text, re.DOTALL)
-        for match in matches:
-            cleaned_match = match.strip().replace('\n', ' ')
-            if cleaned_match and len(cleaned_match) > 5:
-                bullet_points.append(cleaned_match)
+        bullet_points.extend(re.findall(pattern, text))
 
-    if not bullet_points:
-        sentences = re.split(r'(?<=[.!?])\s+', text)
-        for sentence in sentences:
-            cleaned = sentence.strip()
-            if cleaned and len(cleaned) > 10 and len(cleaned) < 500:
-                bullet_points.append(cleaned)
+    return [bp.strip() for bp in bullet_points if len(bp.strip()) > 5]
 
-    return bullet_points
+def analyze_resume_with_job(resume_points, job_description):
+    if not api_key:
+        return "API key is missing. Enter it in the sidebar."
 
-st.title("Resume Points Extractor")
-st.write("Upload your resume PDF to extract key points that can be compared with job descriptions.")
+    prompt = f"""
+    Analyze the following resume points against the job description and rewrite the resume points to be more impactful and tailored to the job description.
 
-uploaded_file = st.file_uploader("Choose your resume PDF file", type="pdf")
+    **Job Description:**
+    {job_description}
 
-if uploaded_file is not None:
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
-        tmp_file.write(uploaded_file.getvalue())
-        tmp_path = tmp_file.name
+    **Resume Points:**
+    {resume_points}
 
-    st.subheader("Uploaded Resume")
-    with open(tmp_path, "rb") as f:
-        base64_pdf = io.BytesIO(f.read()).getvalue()
-        st.download_button(
-            label="Download PDF",
-            data=base64_pdf,
-            file_name=uploaded_file.name,
-            mime="application/pdf"
-        )
+    Specifically, focus on:
+    - Rewriting the resume points to highlight the skills and experiences that are most relevant to the job description.
+    - Using action verbs and quantifiable results to make the resume points more impactful.
+    - Ensuring that the resume points are clear, concise, and easy to understand.
 
-    uploaded_file.seek(0)
+    Return the rewritten resume points in a clear, well-formatted list.
+    """
 
-    resume_text = extract_text_from_pdf(uploaded_file)
+    model = genai.GenerativeModel("gemini-1.5-pro")
+    response = model.generate_content(prompt)
+    return response.text if response and response.text else "Failed to analyze resume."
 
-    if resume_text:
-        st.subheader("Extracted Text")
-        with st.expander("Show Raw Text"):
-            st.text_area("Raw Text", resume_text, height=300)
+def keywords_extraction(job_description):
+    if not api_key:
+        return "API key is missing. Enter it in the sidebar."
 
-        sections = extract_resume_sections(resume_text)
+    prompt = f"Extract the top 10 key skills and requirements from this job description:\n\n{job_description}"
+    model = genai.GenerativeModel("gemini-1.5-pro")
+    response = model.generate_content(prompt)
+    return response.text if response and response.text else "Failed to extract key skills."
 
-        experience_points = []
-        if "experience" in sections:
-            experience_points = extract_bullet_points(sections["experience"])
+tab1, tab2, tab3 = st.tabs(["Upload Resume", "Job Description", "AI Recommendations"])
 
-        project_points = []
-        if "projects" in sections:
-            project_points = extract_bullet_points(sections["projects"])
+with tab1:
+    st.header("Upload Your Resume (PDF)")
+    uploaded_file = st.file_uploader("Choose your resume PDF", type="pdf")
 
-        st.subheader("Extracted Resume Points")
+    if uploaded_file:
+        resume_text = extract_text_from_pdf(uploaded_file)
+        if resume_text:
+            st.success("Resume uploaded and processed successfully!")
+            with st.expander("Extracted Resume Text"):
+                st.text_area("Resume Text", resume_text, height=200)
 
-        if experience_points:
-            st.write("**Work Experience Points:**")
-            for i, point in enumerate(experience_points, 1):
-                st.write(f"{i}. {point}")
+            sections = extract_resume_sections(resume_text)
+            experience_points = extract_bullet_points(sections.get("experience", ""))
+            project_points = extract_bullet_points(sections.get("projects", ""))
 
-            all_exp_points = "\n".join(experience_points)
-            st.text_area("All Experience Points (Copy from here)", all_exp_points, height=200)
+            with st.expander("Extracted Work Experience"):
+                for i, point in enumerate(experience_points, 1):
+                    st.write(f"{i}. {point}")
 
-        if project_points:
-            st.write("**Project Points:**")
-            for i, point in enumerate(project_points, 1):
-                st.write(f"{i}. {point}")
+            with st.expander("Extracted Projects"):
+                for i, point in enumerate(project_points, 1):
+                    st.write(f"{i}. {point}")
 
-            all_proj_points = "\n".join(project_points)
-            st.text_area("All Project Points (Copy from here)", all_proj_points, height=150)
+            st.session_state['resume_text'] = resume_text
+            st.session_state['experience_points'] = experience_points
+            st.session_state['project_points'] = project_points
 
-        if experience_points or project_points:
-            all_points = "# Experience Points\n\n"
-            all_points += "\n".join(experience_points)
-            all_points += "\n\n# Project Points\n\n"
-            all_points += "\n".join(project_points)
+with tab2:
+    st.header("Enter Job Description")
+    job_description = st.text_area("Paste the job description here", height=250)
 
-            st.download_button(
-                label="Download All Points as Text",
-                data=all_points,
-                file_name="resume_points.txt",
-                mime="text/plain",
-            )
+    if job_description:
+        st.session_state['job_description'] = job_description
+        st.success("Job description saved!")
 
-        if not experience_points and not project_points:
-            st.warning("No clear bullet points were extracted. The PDF might be scanned or formatted in a way that makes extraction difficult.")
-            st.info("You can still use the raw text extracted from the PDF.")
+        if api_key and st.button("Extract Key Skills"):
+            skills = keywords_extraction(job_description)
+            st.subheader("Key Skills from Job Description")
+            st.write(skills)
+
+with tab3:
+    st.header("AI Resume Recommendations")
+
+    if 'resume_text' not in st.session_state:
+        st.warning("Please upload your resume in the first tab.")
+    elif 'job_description' not in st.session_state:
+        st.warning("Please enter a job description in the second tab.")
+    elif not api_key:
+        st.warning("An API key is required. Enter your Google Gemini API key in the sidebar.")
+    else:
+        resume_points_text = "\n".join(st.session_state.get('experience_points', []) + st.session_state.get('project_points', []))
+
+        if st.button("Generate Recommendations"):
+            analysis = analyze_resume_with_job(resume_points_text, st.session_state['job_description'])
+            st.subheader("AI Recommendations")
+            st.markdown(analysis)
