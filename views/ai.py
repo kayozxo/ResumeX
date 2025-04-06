@@ -3,6 +3,7 @@ import PyPDF2
 import io
 import re
 import google.generativeai as genai
+from collections import Counter
 
 st.title("AI Resume Optimizer")
 st.write("Upload your resume and paste a job description to get AI-powered suggestions.")
@@ -17,7 +18,7 @@ else:
 
 # Initialize Streamlit page
 st.title("AI Resume Optimizer")
-st.write("Upload your resume and paste a job description to get AI-powered suggestions.")
+st.write("Upload your resume and paste a job description to get AI-powered suggestions and ATS score.")
 
 # Sidebar for API Key
 api_key = st.sidebar.text_input("Enter Google Gemini API Key", type="password")
@@ -92,21 +93,34 @@ def analyze_resume_with_job(resume_points, job_description):
         return "API key is missing. Enter it in the sidebar."
 
     prompt = f"""
-    Analyze the following resume points against the job description and rewrite the resume points to be more impactful and tailored to the job description.
+You are an expert resume optimization AI focused on helping job seekers get past ATS systems while impressing human recruiters.
 
-    **Job Description:**
-    {job_description}
+TASK: Analyze the resume points against the job description and rewrite them to be more impactful, achievement-oriented, and tailored to this specific role.
 
-    **Resume Points:**
-    {resume_points}
+JOB DESCRIPTION:
+{job_description}
 
-    Specifically, focus on:
-    - Rewriting the resume points to highlight the skills and experiences that are most relevant to the job description.
-    - Using action verbs and quantifiable results to make the resume points more impactful.
-    - Ensuring that the resume points are clear, concise, and easy to understand.
+CURRENT RESUME POINTS:
+{resume_points}
 
-    Return the rewritten resume points in a clear, well-formatted list.
-    """
+INSTRUCTIONS:
+1. Maintain absolute factual accuracy - never add skills, experiences, or qualifications that aren't in the original points
+2. Transform each point to highlight RELEVANT accomplishments using the STAR or PAR format (Situation/Task, Action, Result)
+3. Incorporate appropriate keywords and terminology from the job description naturally
+4. Quantify achievements where possible (%, $, time saved, efficiency gained)
+5. Use strong action verbs at the beginning of each point
+6. Remove generic, vague, or irrelevant information
+7. Ensure each point clearly demonstrates value and impact
+8. Optimize for both ATS readability and human engagement
+
+OUTPUT FORMAT:
+- Provide rewritten bullet points in a clear, numbered list
+- Use concise, professional language
+- Maintain appropriate tense (past tense for past roles)
+- Keep each bullet point to 1-2 lines for readability
+
+Remember: Your goal is to truthfully showcase the candidate's relevant experience and skills in the most compelling way possible for THIS SPECIFIC JOB.
+"""
 
     model = genai.GenerativeModel("gemini-1.5-pro")
     response = model.generate_content(prompt)
@@ -121,7 +135,63 @@ def keywords_extraction(job_description):
     response = model.generate_content(prompt)
     return response.text if response and response.text else "Failed to extract key skills."
 
-tab1, tab2, tab3 = st.tabs(["Upload Resume", "Job Description", "AI Recommendations"])
+# New function to calculate ATS score
+def calculate_ats_score(resume_text, job_description):
+    """Calculate ATS score by comparing resume with job description."""
+    if not api_key:
+        return {"score": 0, "feedback": "API key is missing. Enter it in the sidebar."}
+
+    prompt = f"""
+    You are an ATS (Applicant Tracking System) expert. Analyze the resume text against the job description and provide:
+
+    1. A numeric ATS compatibility score from 0-100
+    2. Detailed feedback on why the resume would or wouldn't pass an ATS
+    3. Identify any missing keywords from the job description
+    4. Check for proper formatting issues that might affect ATS parsing
+    5. Suggestions for improvement
+
+    **Job Description:**
+    {job_description}
+
+    **Resume Text:**
+    {resume_text}
+
+    Return the response in a structured format with clear sections for Score, Feedback, Missing Keywords, Formatting Issues, and Suggestions.
+    """
+
+    model = genai.GenerativeModel("gemini-1.5-pro")
+    response = model.generate_content(prompt)
+    return response.text if response and response.text else "Failed to analyze ATS score."
+
+# Function to create a simplified ATS score visualization
+def create_ats_visualization(score):
+    """Create a visual representation of the ATS score."""
+    try:
+        # Extract the score if it's in the text
+        score_match = re.search(r'(?i)score:?\s*(\d+)', score)
+        if score_match:
+            numeric_score = int(score_match.group(1))
+        else:
+            # If no score found, estimate from text sentiment
+            if "excellent" in score.lower() or "strong" in score.lower():
+                numeric_score = 85
+            elif "good" in score.lower():
+                numeric_score = 70
+            elif "average" in score.lower():
+                numeric_score = 50
+            elif "poor" in score.lower():
+                numeric_score = 30
+            else:
+                numeric_score = 50  # Default score
+
+        # Create visualization
+        color = "green" if numeric_score >= 70 else "orange" if numeric_score >= 50 else "red"
+        return numeric_score, color
+    except:
+        return 50, "gray"  # Default fallback
+
+# Create Streamlit tabs
+tab1, tab2, tab3, tab4 = st.tabs(["Upload Resume", "Job Description", "ATS Score", "AI Recommendations"])
 
 with tab1:
     st.header("Upload Your Resume (PDF)")
@@ -163,7 +233,53 @@ with tab2:
             st.subheader("Key Skills from Job Description")
             st.write(skills)
 
+# Tab 3: ATS Score Checker (New Tab)
 with tab3:
+    st.header("ATS Score Checker")
+
+    if 'resume_text' not in st.session_state:
+        st.warning("Please upload your resume in the first tab.")
+    elif 'job_description' not in st.session_state:
+        st.warning("Please enter a job description in the second tab.")
+    elif not api_key:
+        st.warning("An API key is required. Enter your Google Gemini API key in the sidebar.")
+    else:
+        if st.button("Check ATS Score"):
+            with st.spinner("Analyzing your resume against ATS requirements..."):
+                ats_analysis = calculate_ats_score(st.session_state['resume_text'], st.session_state['job_description'])
+                st.session_state['ats_analysis'] = ats_analysis
+
+                # Extract numeric score and color for visualization
+                numeric_score, color = create_ats_visualization(ats_analysis)
+
+                # Display score with a progress bar
+                st.subheader(f"ATS Compatibility Score: {numeric_score}/100")
+                st.progress(numeric_score/100)
+
+                # Display colored indicator
+                st.markdown(f"""
+                <div style="background-color: {color}; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+                    <h3 style="color: white; margin: 0;">
+                        {'Excellent Match' if numeric_score >= 80 else
+                         'Good Match' if numeric_score >= 70 else
+                         'Average Match' if numeric_score >= 50 else
+                         'Poor Match'}
+                    </h3>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # Display the detailed analysis
+                st.subheader("Detailed ATS Analysis")
+                st.markdown(ats_analysis)
+
+                # Add a keyword match visualization
+                st.subheader("Key Recommendations")
+                st.info("⚠️ Make sure your resume includes all the required keywords from the job description.")
+                st.info("📄 Avoid complex formatting, tables, or headers/footers that can confuse ATS systems.")
+                st.info("🔍 Use standard section headings (Experience, Education, Skills) for better parsing.")
+
+# Tab 4: AI Resume Recommendations
+with tab4:
     st.header("AI Resume Recommendations")
 
     if 'resume_text' not in st.session_state:
@@ -176,6 +292,12 @@ with tab3:
         resume_points_text = "\n".join(st.session_state.get('experience_points', []) + st.session_state.get('project_points', []))
 
         if st.button("Generate Recommendations"):
-            analysis = analyze_resume_with_job(resume_points_text, st.session_state['job_description'])
+            with st.spinner("Generating optimized resume points... This may take a moment"):
+                analysis = analyze_resume_with_job(resume_points_text, st.session_state['job_description'])
             st.subheader("AI Recommendations")
             st.markdown(analysis)
+
+            # If ATS analysis is available, show a summary here too
+            if 'ats_analysis' in st.session_state:
+                st.subheader("ATS Optimization Tips")
+                st.info("Implement the recommendations above and then recheck your ATS score to see improvement.")

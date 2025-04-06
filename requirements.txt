@@ -2,4 +2,4 @@ streamlit
 reportlab
 streamlit-antd-components
 PyPDF2
-google-genai
+google-generativeai
