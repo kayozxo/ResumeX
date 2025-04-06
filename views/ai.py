@@ -3,28 +3,13 @@ import PyPDF2
 import io
 import re
 import google.generativeai as genai
-from collections import Counter
 
 st.title("AI Resume Optimizer")
 st.write("Upload your resume and paste a job description to get AI-powered suggestions.")
 
-api_key = st.sidebar.text_input("Enter Google Gemini API Key", type="password")
+api_key = st.sidebar.text_input("Enter Google Gemini API Key", type="password", key="api_key")
 st.sidebar.caption("Get an API key from [Google AI Studio](https://aistudio.google.com/)")
 
-if api_key:
-    genai.configure(api_key=api_key)
-else:
-    st.warning("Enter your Google Gemini API Key to enable AI features.")
-
-# Initialize Streamlit page
-st.title("AI Resume Optimizer")
-st.write("Upload your resume and paste a job description to get AI-powered suggestions and ATS score.")
-
-# Sidebar for API Key
-api_key = st.sidebar.text_input("Enter Google Gemini API Key", type="password")
-st.sidebar.caption("Get an API key from [Google AI Studio](https://aistudio.google.com/)")
-
-# Configure Gemini AI
 if api_key:
     genai.configure(api_key=api_key)
 else:
