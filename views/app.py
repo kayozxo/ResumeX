@@ -199,7 +199,6 @@ def is_valid_grade(grade):
 
 
 st.title("ResumeX")
-st.markdown("Built by [Manoj](https://github.com/kayozxo)")
 
 # Initialize session state
 if "data" not in st.session_state:
