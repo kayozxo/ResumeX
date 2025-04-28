@@ -1,14 +1,46 @@
 import streamlit as st
 import PyPDF2
-import io
-import re
+import re, os
 import google.generativeai as genai
+from streamlit_extras.floating_button import floating_button
+import tempfile
+import pymupdf4llm
 
-st.title("AI Resume Optimizer")
-st.write("Upload your resume and paste a job description to get AI-powered suggestions.")
+st.html("""
+  <style>
 
-api_key = st.sidebar.text_input("Enter Google Gemini API Key", type="password", key="api_key")
-st.sidebar.caption("Get an API key from [Google AI Studio](https://aistudio.google.com/)")
+      div[data-testid="stMainBlockContainer"] {
+          padding: 2rem 4rem 2rem !important;
+      }
+
+  </style>
+  """)
+
+col1, col2, col3, col4, col5 = st.columns([0.2, 0.1, 0.1, 0.1, 0.5], gap="small", vertical_alignment="center")
+with col1:
+    st.image("./Static/logo.svg", width=140)
+with col2:
+    st.page_link("views/welcome.py", label="Home")
+with col3:
+    st.page_link("views/app.py", label="Builder")
+with col4:
+    st.page_link("views/ai.py", label="Enhancer")
+
+# --- API Key Dialog ---
+@st.dialog("Settings")
+def api_key_dialog():
+    api_key = st.text_input("Enter Google Gemini API Key", type="password", key="api_key_input")
+    st.caption("Get an API key from [Google AI Studio](https://aistudio.google.com/)")
+    if api_key:
+        st.session_state["api_key"] = api_key
+
+
+# Show dialog if floating button is clicked
+if floating_button(":material/api:"):
+    api_key_dialog()
+
+# Get API key from session state
+api_key = st.session_state.get("api_key", "")
 
 if api_key:
     genai.configure(api_key=api_key)
@@ -175,38 +207,42 @@ def create_ats_visualization(score):
     except:
         return 50, "gray"  # Default fallback
 
+
+
+st.title("AI Resume Optimizer")
+st.write("Upload your resume and paste a job description to get AI-powered suggestions.")
+
+
 # Create Streamlit tabs
 tab1, tab2, tab3, tab4 = st.tabs(["Upload Resume", "Job Description", "ATS Score", "AI Recommendations"])
 
+
 with tab1:
-    st.header("Upload Your Resume (PDF)")
     uploaded_file = st.file_uploader("Choose your resume PDF", type="pdf")
 
     if uploaded_file:
-        resume_text = extract_text_from_pdf(uploaded_file)
+        temp_dir = tempfile.mkdtemp()
+        path = os.path.join(temp_dir, uploaded_file.name)
+        with open(path, "wb") as f:
+                f.write(uploaded_file.getvalue())
+
+
+        #import pymupdf
+        #doc = pymupdf.open(path)
+        #for page in doc:
+            #resume_text = page.get_text()
+
+
+        resume_text = pymupdf4llm.to_markdown(path)
         if resume_text:
-            st.success("Resume uploaded and processed successfully!")
+            st.success(":material/check: Resume uploaded and processed successfully!")
             with st.expander("Extracted Resume Text"):
-                st.text_area("Resume Text", resume_text, height=200)
-
-            sections = extract_resume_sections(resume_text)
-            experience_points = extract_bullet_points(sections.get("experience", ""))
-            project_points = extract_bullet_points(sections.get("projects", ""))
-
-            with st.expander("Extracted Work Experience"):
-                for i, point in enumerate(experience_points, 1):
-                    st.write(f"{i}. {point}")
-
-            with st.expander("Extracted Projects"):
-                for i, point in enumerate(project_points, 1):
-                    st.write(f"{i}. {point}")
-
+                st.markdown(resume_text)
             st.session_state['resume_text'] = resume_text
-            st.session_state['experience_points'] = experience_points
-            st.session_state['project_points'] = project_points
+
 
 with tab2:
-    st.header("Enter Job Description")
+    st.subheader("Enter Job Description")
     job_description = st.text_area("Paste the job description here", height=250)
 
     if job_description:
@@ -220,7 +256,7 @@ with tab2:
 
 # Tab 3: ATS Score Checker (New Tab)
 with tab3:
-    st.header("ATS Score Checker")
+    st.subheader("ATS Score Checker")
 
     if 'resume_text' not in st.session_state:
         st.warning("Please upload your resume in the first tab.")
@@ -237,35 +273,37 @@ with tab3:
                 # Extract numeric score and color for visualization
                 numeric_score, color = create_ats_visualization(ats_analysis)
 
-                # Display score with a progress bar
-                st.subheader(f"ATS Compatibility Score: {numeric_score}/100")
-                st.progress(numeric_score/100)
+                with st.container(border=True):
+                    # Display score with a progress bar
+                    st.subheader(f"ATS Compatibility Score: {numeric_score}/100")
+                    st.progress(numeric_score/100)
 
-                # Display colored indicator
-                st.markdown(f"""
-                <div style="background-color: {color}; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
-                    <h3 style="color: white; margin: 0;">
-                        {'Excellent Match' if numeric_score >= 80 else
-                         'Good Match' if numeric_score >= 70 else
-                         'Average Match' if numeric_score >= 50 else
-                         'Poor Match'}
-                    </h3>
-                </div>
-                """, unsafe_allow_html=True)
+                    # Display colored indicator
+                    st.markdown(f"""
+                    <div style="background-color: {color}; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+                        <h3 style="color: white; margin: 0;">
+                            {'Excellent Match' if numeric_score >= 80 else
+                            'Good Match' if numeric_score >= 70 else
+                            'Average Match' if numeric_score >= 50 else
+                            'Poor Match'}
+                        </h3>
+                    </div>
+                    """, unsafe_allow_html=True)
 
-                # Display the detailed analysis
-                st.subheader("Detailed ATS Analysis")
-                st.markdown(ats_analysis)
+                with st.container(border=True):
+                    # Display the detailed analysis
+                    st.subheader("Detailed ATS Analysis")
+                    st.markdown(ats_analysis)
 
-                # Add a keyword match visualization
-                st.subheader("Key Recommendations")
-                st.info("⚠️ Make sure your resume includes all the required keywords from the job description.")
-                st.info("📄 Avoid complex formatting, tables, or headers/footers that can confuse ATS systems.")
-                st.info("🔍 Use standard section headings (Experience, Education, Skills) for better parsing.")
+                    # Add a keyword match visualization
+                    st.subheader("Key Recommendations")
+                    st.info("⚠️ Make sure your resume includes all the required keywords from the job description.")
+                    st.info("📄 Avoid complex formatting, tables, or headers/footers that can confuse ATS systems.")
+                    st.info("🔍 Use standard section headings (Experience, Education, Skills) for better parsing.")
 
 # Tab 4: AI Resume Recommendations
 with tab4:
-    st.header("AI Resume Recommendations")
+    st.subheader("AI Resume Recommendations")
 
     if 'resume_text' not in st.session_state:
         st.warning("Please upload your resume in the first tab.")

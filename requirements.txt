@@ -3,3 +3,5 @@ reportlab
 streamlit-antd-components
 PyPDF2
 google-generativeai
+streamlit-extras
+pymupdf4llm

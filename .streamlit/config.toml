@@ -3,6 +3,10 @@ toolbarMode = "minimal"
 
 [theme]
 base="dark"
-primaryColor="#999999"
-backgroundColor="#050505"
-secondaryBackgroundColor="#141415"
+primaryColor="#f5af00"
+backgroundColor="#121212"
+secondaryBackgroundColor="#252525"
+baseRadius="0.5rem"
+
+[server]
+runOnSave = true
