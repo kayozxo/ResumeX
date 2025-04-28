@@ -79,7 +79,7 @@ st.html (
         border-radius: var(--border-radius) !important;
     }
 
-    @media only screen and (max-width: 600px) {
+    @media only screen and (max-width: 640px) {
         div[data-testid="stMainBlockContainer"] {
             padding: 2rem 2rem 0rem !important;
         }
@@ -130,25 +130,69 @@ st.html (
         }
     }
 
-    @media only screen and (min-width: 1200px) {
+    @media only screen and (min-width: 640px) and (max-width: 1330px) {
+        div[data-testid="stMainBlockContainer"] {
+            padding: 2rem 4rem 0rem !important;
+        }
+
+        div[data-testid="stHorizontalBlock"] {
+            flex-direction: column !important;
+            align-items: center !important;
+        }
+
+        div[data-testid="stHorizontalBlock"] > div {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
+        h1, h2 {
+            margin: 0 auto !important;
+            text-align: center !important;
+        }
+
+        h1 {
+            font-size: 3rem !important;
+            padding-bottom: 2.5rem !important;
+        }
+
+        h2 {
+            font-size: 2.4rem !important;
+            padding: 4rem 0rem 2rem 0rem!important;
+        }
+
+        h3 {
+            font-size: 1.8rem !important;
+        }
+
+        p {
+            font-size: 1.2rem !important;
+        }
+
+        .hero-p {
+            font-size: 1.6rem !important;
+            text-align: center !important;
+            padding-bottom: 0.6rem;
+        }
+
+        p:has(span.is-badge) {
+            text-align: center !important;
+        }
+
+        span.is-badge {
+            font-size: 1.2rem !important;
+            margin-bottom: 0.8rem !important;
+        }
+    }
+
+
+    @media only screen and (min-width: 1330px) {
         div[data-testid="stMainBlockContainer"] {
             padding: 2rem 5rem 0rem !important;
-        }
-
-
-    }
-
-    @media only screen and (min-width: 1670px) {
-        div[data-testid="stMainBlockContainer"] {
-            padding: 2rem 14.6rem 0rem !important;
+            max-width: 1330px !important;
         }
     }
 
-    @media only screen and (min-width: 1670px) {
-        div[data-testid="stMainBlockContainer"] {
-            padding: 2rem 24.2rem 0rem !important;
-        }
-    }
+
     /*
     .stMain {
         margin-top: -3rem !important;
