@@ -25,6 +25,16 @@ def video_section():
           height: 97%;
           border-radius: 16px !important;
       }
+
+      .video-container h3 {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: var(--text-color) !important;
+          font-size: 2rem !important;
+          font-weight: 600 !important;
+      }
   </style>
   """)
 
@@ -32,7 +42,6 @@ def video_section():
 
   st.markdown("""
   <div class='video-container'>
-      <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="youtube video" loading="lazy"
-      frameborder="0" allow="clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+        <h3>Coming Soon...</h3>
   </div>
   """, unsafe_allow_html=True)
