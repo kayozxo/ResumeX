@@ -263,7 +263,7 @@ with tab3:
     elif 'job_description' not in st.session_state:
         st.warning("Please enter a job description in the second tab.")
     elif not api_key:
-        st.warning("An API key is required. Enter your Google Gemini API key in the sidebar.")
+        st.warning("An API key is required. Enter your Google Gemini API key in the dialog box by clicking the floating button in the bottom left corner.")
     else:
         if st.button("Check ATS Score"):
             with st.spinner("Analyzing your resume against ATS requirements..."):
